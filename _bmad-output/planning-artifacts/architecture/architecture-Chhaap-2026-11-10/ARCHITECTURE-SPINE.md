@@ -144,11 +144,11 @@ graph TD
     - **Active code:** a 302 to its destination.
     - **Paused or archived code:** the inactive-code page. It never names the client.
     - **Missing slug:** the not-found page.
-    - All three responses carry `Cache-Control: public, max-age=0, s-maxage=60`.
+    - All three responses carry `Cache-Control: public, max-age=0, s-maxage=3600`. A destination or status change can take up to an hour to reach scanners. Nothing purges the cache.
   - For an existing code, the function runs `update({scanCount: FieldValue.increment(1)})` and waits for it, for at most about 200 ms, **before** responding. It never uses `set()`. Failures are logged and never block the response.
   - `/_up` reads `system/monitor`, is never counted, and is sent with `no-store`.
-  - Scans the CDN serves from cache aren't counted, so the count is approximate.
-  - `minInstances` is 0. The OPS-2 monitor pings `/_up` every 5 minutes, which also keeps an instance warm.
+  - Scans the CDN serves from cache aren't counted, so the UI shows the count as "at least N".
+  - `minInstances` is 0. The cache, not warm instances, keeps typical scans fast. The OPS-2 monitor pings `/_up` every 5 minutes.
   - The redirect bundle imports only `firebase-admin/firestore` and `packages/shared`, and starts lazily.
 
 ### AD-10 — One region, one project, Blaze with a budget alert
@@ -157,7 +157,7 @@ graph TD
 - **Prevents:** functions, Firestore and Storage being spread across regions, and tests touching production.
 - **Rule:**
   - One production Firebase project on the Blaze plan, with a budget alert of about $5 a month.
-  - Functions, Firestore and Storage all use `europe-west1`.
+  - Functions, Firestore and Storage all use `africa-south1` (Johannesburg), the nearest Firebase region to the team and scanners in Kenya.
   - Local development, CI and every test run against the Emulator Suite, never against production.
 
 ### AD-11 — One gate decides what can be downloaded
@@ -284,6 +284,7 @@ firebase.json          # two Hosting sites: app, link
 ## Open Questions
 
 - **Does the Hosting CDN cache 302 responses that carry `s-maxage`?** The docs don't say. If it doesn't, redirects stay correct but are never cached. Verify in the redirect epic.
+- **Is a cache miss from Kenya fast enough?** `africa-south1` isn't on Hosting's recommended list of regions for function rewrites, though any region is supported. Measure a cache-miss redirect from Kenya against NFR-3 in the redirect epic.
 - **Does `firebase deploy` accept the `nodejs24` runtime?** Google's runtime page supports it until 2028, but Firebase's own page lists only Node 20 and 22. Confirm at the first deploy. If it doesn't, fall back to `nodejs22`, which is deprecated from 2027-04-30.
 
 ## Deferred
@@ -294,5 +295,6 @@ firebase.json          # two Hosting sites: app, link
 - **CI/CD pipeline.** GitHub Actions deploy versus manual `firebase deploy` is an epic-level choice. Rules, command and render tests run on every PR either way.
 - **App domain.** The app site can stay on `*.web.app` or move to a custom subdomain. Either works.
 - **Bot filtering on the scan count** is out of scope for v1 (PRD FR-11).
+- **Faster changes or a longer cache.** If a one-hour delay on destination changes ever hurts, revisit a purge on change (a new Hosting release) once it's confirmed to clear cached function responses.
 - **UI component library and styling.** Left to the UX work.
 - **Owner setup tasks:** upgrade to Blaze and set the budget alert, make the one-time IAM grant that lets Storage rules call Firestore, apply the bucket CORS config, and point the `chhaap.link` DNS at Hosting.
