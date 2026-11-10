@@ -1,0 +1,40 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/davinderpalrehal/.local/bin/bmad-loop relay SessionStart",
+            "timeout": 60000
+          }
+        ]
+      }
+    ],
+    "AfterAgent": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/davinderpalrehal/.local/bin/bmad-loop relay Stop",
+            "timeout": 60000
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/davinderpalrehal/.local/bin/bmad-loop relay SessionEnd",
+            "timeout": 60000
+          }
+        ]
+      }
+    ]
+  }
+}
