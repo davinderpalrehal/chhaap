@@ -48,7 +48,7 @@ The names below are illustrative stand-ins for team members.
   A printer emails Raj asking for a high-res file of a code from last spring. He opens the client's library, searches "spring", finds the code, and downloads a PNG. It is drawn in the client's current preset. The whole thing takes under a minute.
 
 - **UJ-3. Meera points a printed code at a new page.**
-  The client's spring campaign has ended and the URL is dead. Meera opens the code in the library and changes its destination to the client's summer page. The change is logged with her name and the time. Anyone scanning the printed flyer now lands on the summer page. Nothing is reprinted.
+  The client's spring campaign has ended and the URL is dead. Meera opens the code in the library and changes its destination to the client's summer page. The change is logged with her name and the time. Within the hour, anyone scanning the printed flyer lands on the summer page. Nothing is reprinted.
 
 - **UJ-4. Meera updates a client's brand.**
   A client rebrands with a new logo and colours. Meera (any team member can do this) edits the client's preset and saves it. Before saving, Chhaap re-checks every code for that client that isn't archived, checking each one against the new preset. All of them pass, so the preset is saved. From now on, every view and download of that client's codes uses the new preset. **Edge case:** if any code fails the check, the preset isn't saved. Chhaap lists the codes that failed and why, and suggests archiving any that are no longer in use.
@@ -154,7 +154,7 @@ A team member can change the destination of any code. Realises UJ-3.
 
 **Consequences (testable):**
 - The new destination follows the same URL rules as FR-6.
-- Scans of the short link go to the new destination within a minute of saving. `[ASSUMPTION: 1-minute target; depends on caching in the redirect design.]`
+- Scans of the short link go to the new destination within an hour of saving. Redirects are cached near scanners for up to an hour, so they stay fast. Nothing clears that cache early.
 - Every change adds an entry to the code's change log: who, when, old destination and new destination.
 - The change log can be viewed on the code and can't be edited or deleted.
 - Changing the destination doesn't re-run the scan check, because the short link, and so the drawn code, doesn't change.
@@ -171,10 +171,10 @@ A team member can change a code's name.
 A team member can set a code to active, paused or archived.
 
 **Consequences (testable):**
-- A paused or archived code's short link shows the inactive-code page instead of redirecting.
+- A paused or archived code's short link shows the inactive-code page instead of redirecting. Like a destination change, this reaches scanners within an hour (FR-7).
 - Archived codes are hidden from the default library view, and shown when the team member asks to include them.
 - Before pausing or archiving, the team member is warned that every printed copy of the code will stop redirecting.
-- A paused code can be set active again, and its short link redirects again.
+- A paused code can be set active again, and within an hour its short link redirects again.
 - Before an archived code is set active or paused, it's scan-checked against the client's current preset (FR-12). If it fails, it stays archived and the team member sees the reason.
 - Codes can't be deleted, so a short link is never reused.
 - Every status change adds an entry to the code's change log.
@@ -191,13 +191,13 @@ Anyone who scans a code, or opens its short link, is sent to its destination if 
 
 #### FR-11: Scan count
 
-The system counts scans of each code's short link, and the library shows the total for each code.
+The system counts scans of each code's short link, and the library shows the total for each code as a lower bound ("at least N").
 
 **Consequences (testable):**
-- Each request to a code's short link adds one to that code's scan count.
+- Each request to a code's short link that reaches the redirect service adds one to that code's scan count. A scan answered from the cache near the scanner (FR-7) isn't counted, so the real number of scans is higher.
 - Requests from the uptime monitor (OPS-2) aren't counted, because it uses its own monitoring link rather than a client's code.
 - Requests while a code is paused or archived are counted too. `[ASSUMPTION]`
-- Counting never slows down or blocks the redirect. If counting fails, the redirect still happens.
+- Counting adds at most a fraction of a second to a scan the cache doesn't answer, and never blocks the redirect. If counting fails, the redirect still happens.
 - The count is a single total. It doesn't break scans down by time, place or device.
 - The count is approximate. It may include link-preview fetchers and bots. `[ASSUMPTION: no bot filtering in v1.]`
 
@@ -216,7 +216,8 @@ The system runs the scan check in these cases, and only these:
 
 _Passing_
 - A code passes only if decoding it returns exactly its short link.
-- The size or sizes at which codes are decoded, including a small print-equivalent size, are set in the architecture. `[NOTE FOR PM]`
+- Each code is decoded twice: at 2000 px, the export size, and at 160 px, which is roughly a 2 cm print seen by a phone camera. Both must read back exactly.
+- A stored result applies only to the preset version and the drawing-library version it was checked against. If either changes, the code can't be downloaded until it's checked again.
 
 _On failure_
 - If a new code fails, Chhaap retries with a fresh random slug without telling the team member, because each slug draws a different pattern. `[ASSUMPTION: up to three retries.]`
@@ -263,9 +264,9 @@ A team member can download any code that has passed the scan check, as a PDF or 
 
 - **NFR-1 Access control.** Only signed-in team members can read and write data. This is enforced on the server (Firebase security rules), not only in the app. The one public surface is the redirect (FR-10).
 - **NFR-2 Redirect reliability.** The redirect depends only on Davi Codes' Firebase project and the `chhaap.link` domain, never on a third-party QR or link service.
-- **NFR-3 Redirect speed.** A redirect responds in under 500 ms for a typical scan. `[ASSUMPTION: target, not measured.]`
+- **NFR-3 Redirect speed.** A redirect responds in under 500 ms for a typical scan, meaning one answered from the cache near the scanner. A scan the cache doesn't answer may be slower. The redirect runs in the Firebase region nearest Kenya, where the team and most scanners are. `[ASSUMPTION: target, not measured; measure an uncached scan from Kenya during the build.]`
 - **NFR-4 Generation speed.** Creating and scan-checking a code takes under 10 seconds. A preset save that re-checks all of a client's codes takes under 30 seconds at the current scale (about a dozen codes per client). `[ASSUMPTION]`
-- **NFR-5 Cost.** Running costs stay within Firebase's free tier, or close to zero, at the current scale. `[ASSUMPTION: no explicit ceiling given.]`
+- **NFR-5 Cost.** Running costs stay within Firebase's free usage, or close to zero, at the current scale. The redirect needs Cloud Functions, which require the pay-as-you-go (Blaze) plan. The free usage still applies on that plan, and a budget alert of about $5 a month guards the cost.
 - **NFR-6 Build approach.** Use existing npm packages and Firebase services for the heavy lifting. Custom code is mostly glue. Any new dependency is named and justified in the architecture.
 - **NFR-7 Ready for later features.** The data model lets a v2 client user be given view-and-download access to their own client's codes only, without migrating v1 data. It also leaves room for more than one preset per client later.
 - **NFR-8 Platform.** Desktop web browsers (current Chrome, Safari, Firefox, Edge). Mobile layouts and native apps aren't required. `[ASSUMPTION: desktop browsers are enough for team use.]`
@@ -335,7 +336,7 @@ These keep printed codes working. Most are owner tasks rather than software.
 
 - **Reprints follow the current brand.** Because codes always use the current preset, a reprint after a rebrand won't match copies already printed. Both still scan to the same place. Accepted by the owner.
 - **One preset edit affects every code.** Mitigated by re-checking all of a client's codes that aren't archived before a preset is saved, and by preset history with restore (FR-4, FR-12).
-- **Checking only on change.** If the styling library changes how it draws codes after an upgrade, stored scan results could become stale. Mitigation: re-check all codes after any upgrade of the styling or decoding library. `[ASSUMPTION]`
+- **Checking only on change.** If the styling library changes how it draws codes after an upgrade, stored scan results could become stale. Mitigation: any upgrade of the styling, decoding or PDF library marks every stored result as out of date. Codes can't be downloaded until they're re-checked by re-saving the client's preset (FR-12).
 - **Operational risks** (domain expiry, a stalled styling library, data loss) are handled as owner tasks in OPS-1, OPS-3 and OPS-4.
 
 ## 10. Open questions
@@ -343,20 +344,16 @@ These keep printed codes working. Most are owner tasks rather than software.
 None.
 
 **Deferred**
-- **Scan-check decode size.** Decision owner: Davinderpal (the owner). Decide in the architecture (FR-12).
 - **Bitly reprint plan.** Decision owner: Davinderpal (the owner). Revisit when a client's Bitly code next needs reprinting.
 
 ## 11. Assumptions index
 
 - §4.1 FR-2 — Removing a team member takes effect on their next request.
 - §4.2 FR-3 — Clients can't be deleted.
-- §4.3 FR-7 — Destination changes take effect within 1 minute.
 - §4.3 FR-11 — Scans of paused or archived codes are counted; no bot filtering.
 - §4.4 FR-12 — A failing new code is retried with a fresh slug up to 3 times.
 - §4.5 FR-14 — Export file names include client and code names.
-- §5.1 NFR-3 — Redirect under 500 ms.
+- §5.1 NFR-3 — Cached redirect under 500 ms; uncached speed from Kenya to be measured.
 - §5.1 NFR-4 — Code creation under 10 s; preset re-check under 30 s.
-- §5.1 NFR-5 — Free tier or near-zero cost (no ceiling given).
 - §5.1 NFR-8 — Desktop browsers are enough; mobile isn't required.
 - §5.2 OPS-4 — Backups run weekly.
-- §9 — Re-check all codes after a styling or decoding library upgrade.
