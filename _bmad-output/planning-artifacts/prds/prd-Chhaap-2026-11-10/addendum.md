@@ -6,7 +6,7 @@ updated: 2026-11-10
 
 # Addendum: Chhaap PRD
 
-Detail for architecture and UX that doesn't belong in the PRD itself. The brief's addendum (`briefs/brief-Chhaap-2026-11-10/addendum.md`) holds the research digest and is not repeated here.
+Detail for architecture and UX that doesn't belong in the PRD itself. The brief's addendum (`briefs/brief-Chhaap-2026-11-10/addendum.md`) holds the research digest and is not repeated here. The technical notes below were starting points. Where they differ from the architecture spine (`architecture/architecture-Chhaap-2026-11-10/ARCHITECTURE-SPINE.md`), the spine wins.
 
 ## Rejected alternative: freezing each code's style
 
@@ -28,13 +28,13 @@ The owner first saw a design where the scan check ran on every draw, then chose 
 ### Rendering and export
 
 - **Styling:** `qr-code-styling` (needs a browser DOM). Use error correction level H when a logo is present. Embed the logo as a data URI so SVG and PDF exports don't fetch it by URL. Logos in Firebase Storage need CORS set up.
-- **Decoding:** candidates are `zxing-wasm` or `@zxing/library`.
-- **Scan check decode size:** deferred to architecture (decision owner: Davinderpal). Suggested starting point: decode the rendered raster at export size and again at a small print-equivalent size (about 2 cm).
+- **Decoding:** `zxing-wasm`, chosen in the architecture.
+- **Scan check decode size:** decided in the architecture. Codes are decoded at 2000 px and at 160 px, and both must read back exactly.
 - **PDF:** SVG from `qr-code-styling`, converted to vector PDF via `svg2pdf.js` with `jsPDF` in the browser, or `pdf-lib`/`pdfkit` in a Cloud Function. Test logo embedding.
 
 ### Redirect
 
-- **Redirect:** Firebase Hosting rewrite on `chhaap.link` to a Cloud Function (or similar) that reads the code's Firestore document. A 302 suits editable destinations. Scan count (FR-11): increment it without blocking the response, for example with a Firestore atomic increment after the redirect is sent.
+- **Redirect:** Firebase Hosting rewrite on `chhaap.link` to a Cloud Function (or similar) that reads the code's Firestore document. A 302 suits editable destinations. Responses are cached on the Hosting CDN for one hour. Scan count (FR-11): the function waits briefly for the atomic increment before responding, because 2nd-gen functions may stop work once the response is sent. Scans answered from the cache aren't counted.
 - **Slugs:** random, short and unique; avoid look-alike characters (`0/O`, `1/l/I`). Keep them short so the code stays sparse.
 - **Monitoring link:** a reserved slug (or health path) on `chhaap.link` that goes through the same redirect function but isn't added to the scan count and isn't a client code.
 
