@@ -3,7 +3,7 @@ title: 'Story 1.1: Set up the project skeleton'
 type: 'feature'
 created: '2026-11-11'
 status: 'in-progress'
-baseline_commit: '8624b893536ff1e23548c43f1097da2d2941c3a5'
+baseline_commit: 'ba4d1bba59a15931ee36198f41c8d4d0b5fd6ba9'
 route: 'dispatch'
 review_loop_iteration: 0
 context:
@@ -45,19 +45,19 @@ context:
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `package.json` (root) -- npm workspaces `apps/*`, `packages/*`, `functions`; scripts `dev`, `build`, `typecheck`, `lint`, `test`, `test:unit`, `test:rules`, `test:e2e`; devDeps firebase-tools 15.35.0, vitest 5.1.0, @firebase/rules-unit-testing 6.0.0, eslint toolchain; `engines.node >=24.12`; `.nvmrc` = 24.
-- [ ] `apps/web/` -- create-vue 3.24.0 (`--ts --router --pinia --vitest --playwright --eslint --bare`), versions pinned to Stack; app shell: `SignInView` (Google button, disabled until 1.2), `HomeView` inside `AppLayout` (header + main); `src/styles/tokens.css` + `base.css`; shared `AppButton`.
-- [ ] `packages/shared/` -- `@chhaap/shared`, zod 4.6.7, `src/index.ts` exporting `EmailSchema` (trimmed, lowercased email — the allowlist key format in AD-8); unit test.
-- [ ] `packages/render/` -- `@chhaap/render` placeholder, `src/index.ts` empty export.
-- [ ] `functions/` -- `@chhaap/functions`, firebase-functions 7.4.0 / firebase-admin 14.5.0, `src/index.ts` (`setGlobalOptions({region:'africa-south1'})`), `src/redirect/index.ts` (placeholder `redirect` returning 404 until the redirect epic), `src/commands/index.ts` (empty), `src/auth.ts` (empty, filled by 1.2); tsc build to `lib/`; unit test.
-- [ ] `firebase.json`, `.firebaserc` -- emulators (auth, firestore, storage, functions, hosting, UI), hosting targets `app` (SPA, `apps/web/dist`) and `link` (`/**` → `redirect` in `africa-south1`), functions runtime `nodejs24`, rules files; `.firebaserc` default `demo-chhaap`.
-- [ ] `firestore.rules`, `storage.rules`, `storage.cors.json` -- deny all; CORS kept in repo per AD-8.
-- [ ] `tests/rules/*.test.ts`, `vitest.rules.config.ts` -- prove unauthenticated and authenticated reads/writes are denied in Firestore and Storage.
-- [ ] `tests/layers.test.ts` -- fails if `functions` or `render` import anything but `@chhaap/shared`, if `shared` imports another workspace, or if anything except `apps/web` imports `@chhaap/render`.
-- [ ] `apps/web/playwright.config.ts`, `apps/web/e2e/shell.spec.ts` -- desktop Chromium/Firefox/WebKit; sign-in screen and home layout render.
-- [ ] `.github/workflows/ci.yml` -- on pull_request: Node 24 + Java 21, `npm ci`, typecheck, lint, unit, rules (emulators), e2e; no secrets.
-- [ ] `AGENTS.md` -- install/dev/test/lint commands, prerequisites, layout, styling decision, the six workflow rules, board link.
-- [ ] spine + sprint-status -- record decisions; story `review` at the end.
+- [x] `package.json` (root) -- npm workspaces `apps/*`, `packages/*`, `functions`; scripts `dev`, `build`, `typecheck`, `lint`, `test`, `test:unit`, `test:rules`, `test:e2e`; devDeps firebase-tools 15.35.0, vitest 5.1.0, @firebase/rules-unit-testing 6.0.0, eslint toolchain; `engines.node >=24.12`; `.nvmrc` = 24.
+- [x] `apps/web/` -- create-vue 3.24.0 (`--ts --router --pinia --vitest --playwright --eslint --bare`), versions pinned to Stack; app shell: `SignInView` (Google button, disabled until 1.2), `HomeView` inside `AppLayout` (header + main); `src/styles/tokens.css` + `base.css`; shared `AppButton`.
+- [x] `packages/shared/` -- `@chhaap/shared`, zod 4.6.7, `src/index.ts` exporting `EmailSchema` (trimmed, lowercased email — the allowlist key format in AD-8); unit test.
+- [x] `packages/render/` -- `@chhaap/render` placeholder, `src/index.ts` empty export.
+- [x] `functions/` -- `@chhaap/functions`, firebase-functions 7.4.0 / firebase-admin 14.5.0, `src/index.ts` (`setGlobalOptions({region:'africa-south1'})`), `src/redirect/index.ts` (placeholder `redirect` returning 404 until the redirect epic), `src/commands/index.ts` (empty), `src/auth.ts` (empty, filled by 1.2); tsc build to `lib/`; unit test.
+- [x] `firebase.json`, `.firebaserc` -- emulators (auth, firestore, storage, functions, hosting, UI), hosting targets `app` (SPA, `apps/web/dist`) and `link` (`/**` → `redirect` in `africa-south1`), functions runtime `nodejs24`, rules files; `.firebaserc` default `demo-chhaap`.
+- [x] `firestore.rules`, `storage.rules`, `storage.cors.json` -- deny all; CORS kept in repo per AD-8.
+- [x] `tests/rules/*.test.ts`, `vitest.rules.config.ts` -- prove unauthenticated and authenticated reads/writes are denied in Firestore and Storage.
+- [x] `tests/layers.test.ts` -- fails if `functions` or `render` import anything but `@chhaap/shared`, if `shared` imports another workspace, or if anything except `apps/web` imports `@chhaap/render`.
+- [x] `apps/web/playwright.config.ts`, `apps/web/e2e/shell.spec.ts` -- desktop Chromium/Firefox/WebKit; sign-in screen and home layout render.
+- [x] `.github/workflows/ci.yml` -- on pull_request: Node 24 + Java 21, `npm ci`, typecheck, lint, unit, rules (emulators), e2e; no secrets.
+- [x] `AGENTS.md` -- install/dev/test/lint commands, prerequisites, layout, styling decision, the six workflow rules, board link.
+- [x] spine + sprint-status -- record decisions; story `review` at the end.
 
 **Acceptance Criteria:**
 - Given a fresh clone on Node 24 with Java 21, when I run `npm ci` then `npm run dev`, then Vite, the functions build watcher and the emulators (Auth, Firestore, Storage, Functions, Hosting) all start.
