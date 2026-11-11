@@ -1,0 +1,16 @@
+// Sources are shipped as TypeScript and also run under Node's type stripping
+// (functions emulator), so only erasable syntax is allowed and relative imports
+// carry their `.ts` extension.
+{
+  "extends": "@tsconfig/node24/tsconfig.json",
+  "include": ["src/**/*.ts"],
+  "compilerOptions": {
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+    "types": ["node"]
+  }
+}

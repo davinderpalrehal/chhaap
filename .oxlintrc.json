@@ -1,0 +1,50 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [
+    "eslint",
+    "typescript",
+    "unicorn",
+    "oxc",
+    "vue",
+    "vitest"
+  ],
+  "env": {
+    "browser": true,
+    "node": true
+  },
+  "categories": {
+    "correctness": "error"
+  },
+  "ignorePatterns": [
+    "**/dist/**",
+    "**/coverage/**",
+    "**/test-results/**",
+    "**/playwright-report/**",
+    "functions/lib/**",
+    "_bmad/**",
+    "_bmad-output/**",
+    ".claude/**",
+    ".agents/**",
+    ".codex/**",
+    ".gemini/**"
+  ],
+  "overrides": [
+    {
+      "files": [
+        "tests/rules/**/*.ts"
+      ],
+      "rules": {
+        "vitest/expect-expect": [
+          "error",
+          {
+            "assertFunctionNames": [
+              "expect",
+              "assertFails",
+              "assertSucceeds"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
