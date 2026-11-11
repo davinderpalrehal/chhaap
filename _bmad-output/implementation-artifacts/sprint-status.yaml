@@ -1,0 +1,73 @@
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created, ready for development
+#   - in-progress: Developer actively working on implementation
+#   - review: Implementation complete, ready for review
+#   - done: Story completed
+
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+
+# Action Item Status:
+#   - open: Committed during a retrospective, not yet addressed
+#   - in-progress: Actively being worked on
+#   - done: Completed
+
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when its first story starts (via build's sprint sync)
+# - Stories can be worked in parallel if team capacity allows
+# - Developer typically creates the next story after the previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+# - Retrospective appends its action items to action_items; the status view surfaces open ones
+generated: 11-11-2026 11:56
+last_updated: 11-11-2026 11:56
+project: Chhaap
+project_key: NOKEY
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+development_status:
+  epic-1: backlog
+  1-1-set-up-the-project-skeleton: backlog
+  1-2-sign-in-with-google-limited-to-the-team-allowlist: backlog
+  1-3-owner-manages-the-team-allowlist: backlog
+  1-4-first-production-deploy: backlog
+  epic-1-retrospective: optional
+
+  epic-2: backlog
+  2-1-create-and-rename-clients: backlog
+  2-2-draw-a-code-and-prove-it-scans: backlog
+  2-3-edit-a-client-s-preset-with-live-preview-history-and-restore: backlog
+  2-4-add-a-logo-to-a-client-s-preset: backlog
+  2-5-make-a-code-for-a-client: backlog
+  2-6-browse-and-search-a-client-s-library: backlog
+  2-7-download-a-print-ready-pdf-or-png: backlog
+  2-8-re-check-codes-after-a-renderer-upgrade: backlog
+  epic-2-retrospective: optional
+
+  epic-3: backlog
+  3-1-redirect-short-links: backlog
+  3-2-count-scans: backlog
+  3-3-uptime-monitor-path: backlog
+  3-4-go-live-on-chhaap-link-and-measure-it: backlog
+  epic-3-retrospective: optional
+
+  epic-4: backlog
+  4-1-open-a-code-and-rename-it: backlog
+  4-2-point-a-code-at-a-new-destination: backlog
+  4-3-pause-and-reactivate-a-code: backlog
+  4-4-archive-and-unarchive-a-code: backlog
+  epic-4-retrospective: optional
+
+  epic-5: backlog
+  5-1-weekly-backup-of-data-and-logos: backlog
+  5-2-prove-a-restore-works: backlog
+  epic-5-retrospective: optional
