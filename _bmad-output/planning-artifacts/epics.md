@@ -164,6 +164,11 @@ So that every later story starts from a working, tested base that never touches 
 **When** browser tests run
 **Then** they run in Chromium, Firefox and WebKit at a desktop viewport; no mobile layout is required (NFR-8)
 
+**Given** there is no UX design contract and the spine defers the UI component library and styling
+**When** this story sets up `apps/web`
+**Then** it picks one styling approach (for example plain CSS with a few shared components, or one named Vue component library), records the choice and reason in the architecture spine's Deferred section and in `AGENTS.md`, and justifies any new dependency (NFR-6)
+**And** the app shell (sign-in screen and home layout) uses that approach, so every later UI story follows it
+
 **And** the repo's `AGENTS.md` (or README) documents the install, dev, test and lint commands
 
 ### Story 1.2: Sign in with Google, limited to the team allowlist
