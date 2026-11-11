@@ -1,0 +1,13 @@
+{
+  "projects": {
+    "default": "demo-chhaap"
+  },
+  "targets": {
+    "demo-chhaap": {
+      "hosting": {
+        "app": ["demo-chhaap"],
+        "link": ["demo-chhaap-link"]
+      }
+    }
+  }
+}

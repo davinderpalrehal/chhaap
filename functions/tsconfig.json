@@ -1,0 +1,12 @@
+// Type-checks sources and tests. The emitted build uses tsconfig.build.json.
+{
+  "extends": "@tsconfig/node24/tsconfig.json",
+  "include": ["src/**/*.ts"],
+  "compilerOptions": {
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "verbatimModuleSyntax": true,
+    "types": ["node"],
+    "noEmit": true
+  }
+}

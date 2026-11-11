@@ -1,0 +1,10 @@
+rules_version = '2';
+
+// Story 1.1: deny everything. The create-only logo rule (AD-8) lands with logos.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
