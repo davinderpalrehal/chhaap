@@ -2,7 +2,7 @@
 title: 'Story 1.1: Set up the project skeleton'
 type: 'feature'
 created: '2026-11-11'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: 'ba4d1bba59a15931ee36198f41c8d4d0b5fd6ba9'
 route: 'dispatch'
 review_loop_iteration: 0
@@ -85,6 +85,30 @@ context:
 ## Spec Change Log
 
 ## Review Triage Log
+
+| # | Source | Finding | Verdict | Evidence | Route |
+|---|---|---|---|---|---|
+| 1 | blind, edge, verif | `tests/layers.ts` skips any folder named `lib`/`dist`/`coverage` at any depth; walker only tested for `[]` | medium | `SKIP_DIRS.has(entry.name)` by bare name; verification layer reproduced a missed `apps/web/src/lib/x.ts` violation | patch |
+| 2 | edge | Dynamic `import()` with backtick specifier not detected | low | `DYNAMIC_IMPORT` only accepts `'`/`"`; direct regex correction | patch |
+| 3 | blind | `apps/web/e2e/*.spec.ts` never type-checked | low | `apps/web/tsconfig.json` references node/app/vitest only; root tsconfig covers `tests/**` | patch |
+| 4 | blind, edge | `.editorconfig` lacks `root = true` | low | file starts with a glob section; direct one-line fix | patch |
+| 5 | edge | `afterAll` calls `env.cleanup()` on undefined env when setup fails | low | `let env` assigned only in `beforeAll`; direct `?.` fix | patch |
+| 6 | edge | `EmailSchema` has no length cap | low | `z.string().trim().toLowerCase().pipe(z.email())`; direct `.max(254)` | patch |
+| 7 | blind | `functions` cannot ship `@chhaap/shared` at deploy | medium | shared exports `./src/index.ts`, deploy uploads only `functions/`; already noted in Design Notes | defer (Story 1.4) |
+| 8 | blind, edge | `storage.cors.json` allows only localhost:5173 | medium | production app origin unknown until first deploy | defer (Story 1.4) |
+| 9 | edge | `.firebaserc` has no production targets for `app`/`link` | medium | intent forbids production ids in this story | defer (Story 1.4) |
+| 10 | blind | Workspace deps undeclared (functions devDeps, web→shared) | low | npm run adds ancestor `node_modules/.bin`, so scripts work; nothing imports shared yet | reject |
+| 11 | blind, edge, verif | Layer test ignores `@/` alias escapes | low | unusual pattern; fix adds a resolution branch | reject |
+| 12 | blind, edge | Router has no catch-all route | low | auth guards and real routes land in Story 1.2; fix adds a view | reject |
+| 13 | blind | App Hosting site has no cache/security headers | low | deploy concern, nothing is served from production in this story | reject (note for 1.4) |
+| 14 | blind | CI runs on `pull_request` only | false | the AC asks for every PR; merges into develop only happen through PRs | reject |
+| 15 | blind | Functions test reads private `__endpoint` and pins export keys | low | only way to assert region without a new dependency; key pin is deliberate | reject |
+| 16 | blind | No e2e of the link rewrite | low | implementer checked it manually with `npm run dev`; adding emulator e2e is new surface | reject |
+| 17 | blind | Node constraints inconsistent (`.nvmrc` 24 vs engines >=24.12) | low | `engines` enforces the floor; `.nvmrc` 24 resolves to the latest 24.x | reject |
+| 18 | blind | `AppButton` tests cover defaults only | low | extra tests, not a defect | reject |
+| 19 | edge | Commented-out imports flagged as violations | low | only a spurious failure, never a missed one; fix adds parsing | reject |
+| 20 | edge | `CI=false` treated as CI in Playwright config | false | create-vue default; no one sets `CI=false` | reject |
+| 21 | edge | `reuseExistingServer` may reuse an unrelated 5173 server | low | create-vue default, local only | reject |
 
 ## Design Notes
 

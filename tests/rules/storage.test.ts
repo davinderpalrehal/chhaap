@@ -21,7 +21,7 @@ beforeEach(async () => {
 })
 
 afterAll(async () => {
-  await env.cleanup()
+  await env?.cleanup()
 })
 
 describe.each([

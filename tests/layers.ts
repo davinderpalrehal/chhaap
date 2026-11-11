@@ -20,18 +20,12 @@ export const WORKSPACES = {
 type WorkspaceDir = keyof typeof WORKSPACES
 
 const SOURCE_FILE = /\.(?:[cm]?[jt]sx?|vue)$/
-const SKIP_DIRS = new Set([
-  'node_modules',
-  'dist',
-  'dist-ssr',
-  'lib',
-  'coverage',
-  'test-results',
-  'playwright-report',
-])
+// Build output is skipped only at a workspace's top level (e.g. `functions/lib`,
+// `apps/web/dist`), so a source folder such as `src/lib/` is still scanned.
+const BUILD_DIRS = new Set(['dist', 'dist-ssr', 'lib', 'coverage', 'test-results', 'playwright-report'])
 
 const STATIC_IMPORT = /\b(?:import|export)\s+(?:type\s+)?(?:[^'"`;]*?\s+from\s+)?['"]([^'"\n]+)['"]/g
-const DYNAMIC_IMPORT = /\b(?:import|require)\s*\(\s*['"]([^'"\n]+)['"]\s*\)/g
+const DYNAMIC_IMPORT = /\b(?:import|require)\s*\(\s*['"`]([^'"`\n]+)['"`]\s*\)/g
 
 export function importSpecifiers(source: string): string[] {
   const found = new Set<string>()
@@ -73,11 +67,15 @@ export function checkFile(file: string, source: string): string[] {
   return violations
 }
 
-function* sourceFiles(root: string, dir: string): Generator<string> {
+function* sourceFiles(root: string, dir: string, workspace: string): Generator<string> {
   for (const entry of readdirSync(posix.join(root, dir), { withFileTypes: true })) {
     const path = posix.join(dir, entry.name)
     if (entry.isDirectory()) {
-      if (!SKIP_DIRS.has(entry.name) && !entry.name.startsWith('.')) yield* sourceFiles(root, path)
+      const skip =
+        entry.name === 'node_modules' ||
+        entry.name.startsWith('.') ||
+        (dir === workspace && BUILD_DIRS.has(entry.name))
+      if (!skip) yield* sourceFiles(root, path, workspace)
     } else if (SOURCE_FILE.test(entry.name)) {
       yield path
     }
@@ -87,7 +85,7 @@ function* sourceFiles(root: string, dir: string): Generator<string> {
 export function findViolations(root: string): string[] {
   const violations: string[] = []
   for (const dir of Object.keys(WORKSPACES)) {
-    for (const file of sourceFiles(root, dir)) {
+    for (const file of sourceFiles(root, dir, dir)) {
       violations.push(...checkFile(file, readFileSync(posix.join(root, file), 'utf8')))
     }
   }

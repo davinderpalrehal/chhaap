@@ -18,6 +18,22 @@ describe('EmailSchema', () => {
     },
   )
 
+  it('accepts up to 254 characters after trimming and rejects 255', () => {
+    // 64-char local part + '@' + labels of up to 63 chars, ending in '.com'.
+    const emailOfLength = (length: number) => {
+      const domainLength = length - 65 - '.com'.length
+      const labels = Array.from({ length: Math.ceil(domainLength / 63) }, () => '')
+      for (let i = 0; i < domainLength - (labels.length - 1); i++) labels[i % labels.length] += 'b'
+      return `${'a'.repeat(64)}@${labels.join('.')}.com`
+    }
+    const max = emailOfLength(254)
+    const tooLong = emailOfLength(255)
+    expect(max).toHaveLength(254)
+    expect(tooLong).toHaveLength(255)
+    expect(EmailSchema.parse(`  ${max}  `)).toBe(max)
+    expect(EmailSchema.safeParse(tooLong).success).toBe(false)
+  })
+
   it('rejects non-strings', () => {
     expect(EmailSchema.safeParse(42).success).toBe(false)
     expect(EmailSchema.safeParse(undefined).success).toBe(false)

@@ -19,7 +19,7 @@ beforeEach(async () => {
 })
 
 afterAll(async () => {
-  await env.cleanup()
+  await env?.cleanup()
 })
 
 const paths = ['codes/abc23', 'allowlist/member@example.com', 'clients/c1']
