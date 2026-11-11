@@ -1,0 +1,13 @@
+// Type-checks repo-level tests and config files. Workspaces have their own tsconfig.
+{
+  "extends": "@tsconfig/node24/tsconfig.json",
+  "include": ["tests/**/*.ts", "vitest.config.ts", "vitest.rules.config.ts", "eslint.config.ts"],
+  "compilerOptions": {
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+    "types": ["node"]
+  }
+}

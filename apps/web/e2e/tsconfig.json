@@ -1,0 +1,11 @@
+{
+  "extends": "@tsconfig/node24/tsconfig.json",
+  "include": ["./**/*"],
+  "compilerOptions": {
+    "types": ["node"],
+
+    // Type-check only, as part of `vue-tsc --build` from ../tsconfig.json.
+    "noEmit": true,
+    "tsBuildInfoFile": "../node_modules/.tmp/tsconfig.e2e.tsbuildinfo"
+  }
+}

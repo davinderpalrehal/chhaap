@@ -5,3 +5,37 @@ _bmad/render/
 
 # Per-user BMAD install answers
 _bmad/config.user.toml
+
+# Node / build output
+node_modules/
+dist/
+dist-ssr/
+coverage/
+functions/lib/
+*.tsbuildinfo
+.eslintcache
+*.local
+*.log
+.DS_Store
+
+# Vite / Vitest
+*.timestamp-*-*.mjs
+__screenshots__/
+
+# Playwright
+test-results/
+playwright-report/
+
+# Firebase
+.firebase/
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+database-debug.log*
+pubsub-debug.log*
+
+# Editors
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.sw?
