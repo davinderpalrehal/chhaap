@@ -274,6 +274,7 @@ So that each customer has one place for its brand and codes.
 **Given** a signed-in team member on the Clients screen
 **When** they create a client with a name
 **Then** `createClient` (after `assertTeamMember()`) writes, in one transaction: `clients/{autoId}` with `activePresetId`, `createdAt` and `createdBy`; its first preset at `clients/{id}/presets/{autoId}` with `currentVersion: 1` and default settings with no logo; that preset's `versions/1`; and `clientNames/{lowercased name}` (AD-6, conventions)
+**And** the default settings are the approved look in `reference/default-preset/README.md`: round dots, rounded corner markers, black on white, error correction H and a cleared centre for a logo. They live in one constant in `packages/shared`
 **And** the new client appears in the list and opens a simple client page (name, rename, link to its preset) that Story 2.6 later turns into the library
 
 **Given** a client named "Acme"
@@ -316,6 +317,7 @@ So that what I preview, what gets checked and what gets printed are always the s
 **When** the scan check runs
 **Then** the `zxing-wasm` reader file is served from the app's own origin, never from a CDN
 
+**And** drawing the default preset (Story 2.1's constant) with and without `reference/default-preset/sumo-computers-logo-bw.png` gives the look of `approved-reference.png` (same style, not identical pixels), and both pass the scan check at 2000 px and 160 px; the exact qr-code-styling type for the rounded corner centre is confirmed and noted in the reference README
 **And** Playwright tests in a real browser cover: a default preset passes; a near-zero-contrast preset fails with `no-read`; a mocked decode of another string fails with `wrong-link`. A short note records that `RENDERER_VERSION` must be bumped on any upgrade of the four libraries
 
 ### Story 2.3: Edit a client's preset with live preview, history and restore
