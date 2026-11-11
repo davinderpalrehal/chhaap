@@ -68,6 +68,20 @@ context:
 
 ## Implementation Notes
 
+**Plan (build session):**
+- Scaffold `apps/web` with create-vue 3.24.0, re-pin Stack packages exactly, move ESLint/oxlint config, `.editorconfig`, `.gitattributes` and ignore entries to the root; drop `.vscode/`, README and the counter store.
+- Root `package.json`: workspaces, `run-p` (npm-run-all2, already in the create-vue toolchain) for `dev`; root `vitest.config.ts` with `projects` for web, shared, functions and the root layers test; separate `vitest.rules.config.ts` run under `firebase emulators:exec`.
+- `functions` is ESM, `tsc` to `lib/`; handlers exported separately so unit tests call them without the emulator.
+- Layers test = a small import-specifier scanner (`tests/layers.ts`) tested on the real tree and on synthetic violations.
+- Risks: `nodejs24` deploy support (spine open question); Hosting emulator with two sites on one port range; Java 21 needed for emulators.
+
+**Deviations and findings (build session):**
+- `setGlobalOptions` lives in `functions/src/options.ts`, imported first by `src/index.ts`. Calling it in the body of `index.ts` is too late: ES modules evaluate `export … from` imports first, and firebase-functions reads global options when a function is defined, so `redirect` got no region. A unit test guards this.
+- Hosting emulator: `app` on 127.0.0.1:5050 (5000 is taken by macOS AirPlay), `link` on the next free port (5055 locally). `app` serves `apps/web/dist`, which is empty (404) until `npm run build`; day-to-day dev uses Vite on 5173.
+- `storage.cors.json` lists only `http://localhost:5173`; Story 1.4 adds the production app origin.
+- `functions` does not depend on `@chhaap/shared` yet; how it ships `shared` at deploy stays a Story 1.4 risk.
+- Per the orchestrating session: AGENTS.md was not touched, and sprint-status was not edited (Code Map says the orchestrator owns it).
+
 ## Spec Change Log
 
 ## Review Triage Log

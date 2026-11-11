@@ -222,6 +222,7 @@ graph TD
 | jspdf / svg2pdf.js | 4.2.1 / 2.9.0 |
 | Vitest / @firebase/rules-unit-testing | 5.1.0 / 6.0.0 |
 | Playwright | 1.65.0 |
+| create-vue toolchain (dev only: ESLint 10 + `@vue/eslint-config-typescript`, `eslint-plugin-vue`, `eslint-plugin-playwright`, `@vitest/eslint-plugin`, oxlint + `eslint-plugin-oxlint`, `jiti`, `vue-eslint-parser`, `@vitejs/plugin-vue`, `vite-plugin-vue-devtools`, `@vue/test-utils`, `@vue/tsconfig`, `@tsconfig/node24`, jsdom, `npm-run-all2`) | as scaffolded by create-vue 3.24.0, locked by `package-lock.json`. Lint, test and build glue that create-vue ships; lint is extended from `apps/web` to the whole repo. |
 
 ## Structural Seed
 
@@ -296,5 +297,5 @@ firebase.json          # two Hosting sites: app, link
 - **App domain.** The app site can stay on `*.web.app` or move to a custom subdomain. Either works.
 - **Bot filtering on the scan count** is out of scope for v1 (PRD FR-11).
 - **Faster changes or a longer cache.** If a one-hour delay on destination changes ever hurts, revisit a purge on change (a new Hosting release) once it's confirmed to clear cached function responses.
-- **UI component library and styling.** Left to the UX work.
+- **UI component library and styling.** Decided in Story 1.1: plain CSS. One global stylesheet of tokens (CSS custom properties, `apps/web/src/styles/tokens.css`) plus `base.css`, scoped SFC styles, and a few shared components (`AppButton`, `AppLayout`). No component library and no new dependency, because the app is a small desktop-only team tool and the UX work can restyle it through the tokens.
 - **Owner setup tasks:** upgrade to Blaze and set the budget alert, make the one-time IAM grant that lets Storage rules call Firestore, apply the bucket CORS config, and point the `chhaap.link` DNS at Hosting.
