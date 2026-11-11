@@ -3,7 +3,7 @@ title: 'Story 1.1: Set up the project skeleton'
 type: 'feature'
 created: '2026-11-11'
 status: 'in-progress'
-baseline_commit: 'BASE'
+baseline_commit: '8624b893536ff1e23548c43f1097da2d2941c3a5'
 route: 'dispatch'
 review_loop_iteration: 0
 context:
