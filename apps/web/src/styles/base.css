@@ -5,6 +5,18 @@
  */
 @layer vuetify-core, vuetify-components, vuetify-overrides, vuetify-utilities, vuetify-final, app;
 
+/*
+ * Brand radius from tokens.css on Vuetify's surfaces (icon buttons stay round).
+ * It sits in vuetify-overrides: it beats vuetify-components, but Vuetify's
+ * `rounded` utility classes (vuetify-utilities) still win when a prop asks for them.
+ */
+@layer vuetify-overrides {
+  .v-card,
+  .v-btn:not(.v-btn--icon) {
+    border-radius: var(--radius);
+  }
+}
+
 @layer app {
   /* Brand font from tokens.css, fed into Vuetify's font variables. No web font is loaded. */
   :root {
@@ -21,10 +33,11 @@
     background: var(--color-bg);
   }
 
-  /* Brand radius from tokens.css on Vuetify's surfaces (icon buttons stay round). */
-  .v-card,
-  .v-btn:not(.v-btn--icon) {
-    border-radius: var(--radius);
+  h1,
+  h2,
+  h3 {
+    margin: 0;
+    line-height: 1.2;
   }
 
   :focus-visible {

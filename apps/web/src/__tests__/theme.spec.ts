@@ -14,6 +14,7 @@ describe('Vuetify theme', () => {
   it('maps the brand tokens onto the light theme', () => {
     expect(lightTheme().colors).toMatchObject({
       primary: colors.accent,
+      'on-primary': colors['accent-text'],
       background: colors.bg,
       surface: colors.surface,
       'on-surface': colors.text,

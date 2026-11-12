@@ -1,7 +1,7 @@
 <template>
   <v-main>
     <v-container class="sign-in" fluid>
-      <v-card class="sign-in__card" variant="flat" border aria-labelledby="sign-in-title">
+      <v-card tag="section" class="sign-in__card" variant="flat" border aria-labelledby="sign-in-title">
         <v-card-item>
           <h1 id="sign-in-title" class="sign-in__title">Chhaap</h1>
         </v-card-item>
