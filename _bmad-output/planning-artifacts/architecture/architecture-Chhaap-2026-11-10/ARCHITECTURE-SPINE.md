@@ -7,7 +7,7 @@ paradigm: 'CQRS-lite on Firebase with a shared functional render core'
 scope: 'Chhaap v1: team web app, command functions, chhaap.link redirect, scan check and export'
 status: final
 created: '2026-11-10'
-updated: '2026-11-10'
+updated: '2026-11-12'
 binds: [FR-1, FR-2, FR-3, FR-4, FR-5, FR-6, FR-7, FR-8, FR-9, FR-10, FR-11, FR-12, FR-13, FR-14, NFR-1, NFR-2, NFR-3, NFR-4, NFR-5, NFR-6, NFR-7, NFR-8, OPS-2, OPS-4]
 sources:
   - _bmad-output/planning-artifacts/prds/prd-Chhaap-2026-11-10/prd.md
@@ -202,6 +202,7 @@ graph TD
 | URLs | Destinations must be absolute `http`/`https` URLs, checked by the shared validator on both sides. |
 | Export file names | `<client>-<code name>.<pdf|png>`, slugified. |
 | Tests | Rules tests with `@firebase/rules-unit-testing`. Command tests run against the emulators. Render tests run in a real browser (Playwright), because `qr-code-styling` needs a DOM. |
+| UI | Vuetify components only in `apps/web`. No other package or function imports `vuetify` (enforced by `tests/layers.ts`). The theme is built from `apps/web/src/styles/tokens.css`, with `defaultTheme: 'light'`. Icons are `@mdi/js` SVGs. No font, icon or other asset is fetched from a CDN or third party at runtime. The app's own styles win over Vuetify's through CSS layers, never `!important`. |
 
 ## Stack
 
@@ -222,6 +223,10 @@ graph TD
 | jspdf / svg2pdf.js | 4.2.1 / 2.9.0 |
 | Vitest / @firebase/rules-unit-testing | 5.1.0 / 6.0.0 |
 | Playwright | 1.65.0 |
+| Vuetify (`apps/web` only) | 4.3.3. The UI component library (#23). It ships the inputs, selects, colour picker, file input, data table, dialogs, snackbars, tabs and timeline that Epics 1–4 need. MIT, no paid tier, actively maintained, supports Vue ^3.5, tree-shakes. |
+| vite-plugin-vuetify (dev, `apps/web` only) | 2.1.3. Imports only the Vuetify components in use. |
+| @mdi/js (`apps/web` only) | 7.4.47. Material Design icons as SVG path strings, bundled with the app, so no icon font or CDN fetch. The package is data only, so its slow release cadence is low risk. |
+| @axe-core/playwright (dev) | 4.14.0. Accessibility checks in the Playwright e2e tests. |
 | create-vue toolchain (dev only: ESLint 10 + `@vue/eslint-config-typescript`, `eslint-plugin-vue`, `eslint-plugin-playwright`, `@vitest/eslint-plugin`, oxlint + `eslint-plugin-oxlint`, `jiti`, `vue-eslint-parser`, `@vitejs/plugin-vue`, `vite-plugin-vue-devtools`, `@vue/test-utils`, `@vue/tsconfig`, `@tsconfig/node24`, jsdom, `npm-run-all2`) | as scaffolded by create-vue 3.24.0, locked by `package-lock.json`. Lint, test and build glue that create-vue ships; lint is extended from `apps/web` to the whole repo. |
 
 ## Structural Seed
@@ -297,5 +302,5 @@ firebase.json          # two Hosting sites: app, link
 - **App domain.** The app site can stay on `*.web.app` or move to a custom subdomain. Either works.
 - **Bot filtering on the scan count** is out of scope for v1 (PRD FR-11).
 - **Faster changes or a longer cache.** If a one-hour delay on destination changes ever hurts, revisit a purge on change (a new Hosting release) once it's confirmed to clear cached function responses.
-- **UI component library and styling.** Decided in Story 1.1: plain CSS. One global stylesheet of tokens (CSS custom properties, `apps/web/src/styles/tokens.css`) plus `base.css`, scoped SFC styles, and a few shared components (`AppButton`, `AppLayout`). No component library and no new dependency, because the app is a small desktop-only team tool and the UX work can restyle it through the tokens.
+- **UI component library and styling.** Decided in #23 (2026-11-12): **Vuetify 4**, replacing Story 1.1's plain CSS. The owner wanted every UI element ready-made, and Vuetify covers all the components Epics 1–4 need (see Stack). The tokens in `apps/web/src/styles/tokens.css` stay the single source of brand colour, font, radius and spacing, and feed the Vuetify theme. Story 1.5 (#24) installs it and moves the app shell onto it before Story 1.2.
 - **Owner setup tasks:** upgrade to Blaze and set the budget alert, make the one-time IAM grant that lets Storage rules call Firestore, apply the bucket CORS config, and point the `chhaap.link` DNS at Hosting.
