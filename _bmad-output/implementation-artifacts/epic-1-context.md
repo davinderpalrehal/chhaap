@@ -36,7 +36,7 @@ Team members sign in with Google and reach a still-empty app; anyone not on the 
 - Commands `addTeamMember` and `removeTeamMember` validate input with zod schemas in `packages/shared`, shared with the web app. Errors are `HttpsError` (`invalid-argument`, `already-exists`, `failed-precondition`, `permission-denied`) mapped to UI messages.
 - One region and project: functions, Firestore and Storage in `africa-south1`. Local dev, CI and tests run on the Emulator Suite (Auth, Firestore, Storage, Functions, Hosting); one documented command starts web, functions and emulators.
 - Testing: rules tests via `@firebase/rules-unit-testing`; command and auth tests against emulators. CI on every PR runs type-check, lint, unit and rules tests.
-- Styling and UI component library are undecided: Story 1.1 picks one approach, and records the choice and reason in the architecture's Deferred section and `AGENTS.md`. The app shell uses it.
+- UI component library: Vuetify 4 (#23), replacing Story 1.1's plain CSS. Story 1.5 installs it and moves the app shell onto it before Story 1.2. Theme from `tokens.css`, `@mdi/js` SVG icons, no CDN assets, only `apps/web` imports it.
 - `AGENTS.md` documents install, dev, test and lint commands, and the chosen deploy route (GitHub Actions on merge to `main`, or documented manual `firebase deploy`).
 
 ## UX & Interaction Patterns
@@ -48,6 +48,7 @@ Team members sign in with Google and reach a still-empty app; anyone not on the 
 ## Cross-Story Dependencies
 
 - Story 1.1 underpins all others (layout, emulators, rules, CI, styling choice).
+- Story 1.5 follows 1.1 and comes before 1.2; 1.2 and 1.3 build their screens with Vuetify.
 - Story 1.2 builds the allowlist rules, `auth.ts` and owner bootstrap script that Stories 1.3 and 1.4 rely on.
 - Story 1.3 uses `assertTeamMember()`/`assertOwner()` from 1.2.
 - Story 1.4 deploys the result and needs the owner setup tasks done; it signs in with the owner bootstrapped by 1.2's script.

@@ -56,7 +56,7 @@ This document provides the complete epic and story breakdown for Chhaap, decompo
 From the architecture spine (AD-1 to AD-12). No starter template is named beyond scaffolding the web app with **create-vue** (Vue 3.5, Vite 8, TS ~6.0, Router 5, Pinia 4); the monorepo layout below is the structural seed, so Epic 1 Story 1 sets it up.
 
 - **Monorepo layout:** `apps/web` (create-vue SPA), `packages/shared`, `packages/render`, `functions/src/{commands,redirect,auth.ts}`, `firestore.rules`, `storage.rules`, `storage.cors.json`, `firebase.json` with two Hosting sites (app, link). Import rules per layer as in the spine's layer table.
-- **Pinned stack:** Node 24 (Functions `nodejs24`, fall back to `nodejs22` if deploy rejects it), zod 4.6.7, firebase 13.2.0, firebase-functions 7.4.0 / firebase-admin 14.5.0, firebase-tools 15.35.0, qr-code-styling 1.9.2, zxing-wasm 3.1.6, jspdf 4.2.1 / svg2pdf.js 2.9.0, Vitest 5.1.0, @firebase/rules-unit-testing 6.0.0, Playwright 1.65.0.
+- **Pinned stack:** Node 24 (Functions `nodejs24`, fall back to `nodejs22` if deploy rejects it), zod 4.6.7, firebase 13.2.0, firebase-functions 7.4.0 / firebase-admin 14.5.0, firebase-tools 15.35.0, qr-code-styling 1.9.2, zxing-wasm 3.1.6, jspdf 4.2.1 / svg2pdf.js 2.9.0, Vitest 5.1.0, @firebase/rules-unit-testing 6.0.0, Playwright 1.65.0. UI (added by #23): Vuetify 4.3.3, vite-plugin-vuetify 2.1.3, @mdi/js 7.4.47, @axe-core/playwright 4.14.0, all in `apps/web` only.
 - **AD-1 CQRS-lite:** the web app reads Firestore directly under rules; every write goes through a callable command. `firestore.rules` denies all client writes. The only client write is a create-only logo upload to Storage. Commands accept browser-attested scan results and never draw or decode.
 - **AD-2 One render module:** only `packages/render` imports qr-code-styling, zxing-wasm, jspdf and svg2pdf.js. It exposes `draw`, `scanCheck`, `exportPng`, `exportPdf`, each taking a resolved preset (logo as data URI). Error correction H when a logo is present. 4-module quiet zone everywhere. zxing wasm self-hosted, `formats: ['QRCode']`. `RENDERER_VERSION` in `packages/shared`, bumped on any upgrade of those four libraries. A test exports a PDF, rasterises it and scan-checks the result.
 - **AD-3 Pass criterion:** exact decode of `https://chhaap.link/<slug>` from both a 2000 px and a 160 px raster drawn by `draw()`. Reasons only `no-read` and `wrong-link`.
@@ -72,12 +72,12 @@ From the architecture spine (AD-1 to AD-12). No starter template is named beyond
 - **Conventions:** collections `allowlist`, `clientNames`, `clients`, `clients/{id}/presets`, `.../versions`, `codes`, `codes/{slug}/changes`, `system`; camelCase fields. `clientNames/{lowercased name}` owned by `createClient`/`renameClient` in the same transaction. Timestamps via `serverTimestamp()` by commands only; actor = verified email. Commands: `createClient`, `renameClient`, `savePreset`, `restorePreset`, `createCode`, `renameCode`, `setDestination`, `setStatus`, `addTeamMember`, `removeTeamMember`, each validated by a zod schema in `packages/shared` shared with the web app. Errors as `HttpsError` (`invalid-argument`, `permission-denied`, `failed-precondition`, `already-exists`, `not-found`), mapped to UI messages. Export file names `<client>-<code name>.<pdf|png>`, slugified.
 - **Testing:** rules tests with `@firebase/rules-unit-testing`; command tests against the emulators; render tests in a real browser via Playwright.
 - **Open questions to resolve in the redirect epic:** whether the Hosting CDN caches 302s with `s-maxage`; measure a cache-miss redirect from Kenya against NFR-3; confirm `nodejs24` deploys.
-- **Deferred to epic level:** the "re-check all" UI/trigger after a `RENDERER_VERSION` bump; backup mechanism for OPS-4 (scheduled Firestore backups vs managed export, plus a logos-bucket copy, weekly); CI/CD choice (rules, command and render tests run on every PR either way); app domain; UI component library and styling (no UX docs).
+- **Deferred to epic level:** the "re-check all" UI/trigger after a `RENDERER_VERSION` bump; backup mechanism for OPS-4 (scheduled Firestore backups vs managed export, plus a logos-bucket copy, weekly); CI/CD choice (rules, command and render tests run on every PR either way); app domain. (UI component library: decided in #23, Vuetify 4; see Story 1.5.)
 - **Owner setup tasks (not software, but block first deploy):** Blaze upgrade and budget alert, one-time IAM grant letting Storage rules read Firestore, applying bucket CORS, pointing `chhaap.link` DNS at Hosting. OPS-1 (domain auto-renew and lock) and OPS-3 (accept forking qr-code-styling) are owner tasks with no stories.
 
 ### UX Design Requirements
 
-None. No UX design contract exists for Chhaap. UI decisions (component library, styling, layout) are deferred to the stories themselves, within NFR-8 (desktop browsers only).
+No UX design contract exists for Chhaap. The component library is Vuetify 4 (#23), adopted in Story 1.5; every UI story builds with Vuetify components and the brand tokens. Layout decisions stay with the stories themselves, within NFR-8 (desktop browsers only).
 
 ### FR Coverage Map
 
@@ -169,7 +169,57 @@ So that every later story starts from a working, tested base that never touches 
 **Then** it picks one styling approach (for example plain CSS with a few shared components, or one named Vue component library), records the choice and reason in the architecture spine's Deferred section and in `AGENTS.md`, and justifies any new dependency (NFR-6)
 **And** the app shell (sign-in screen and home layout) uses that approach, so every later UI story follows it
 
+> **Superseded (2026-11-12, #23):** the plain-CSS choice made here is replaced by Vuetify 4. Story 1.5 moves the app shell onto it.
+
 **And** the repo's `AGENTS.md` (or README) documents the install, dev, test and lint commands
+
+### Story 1.5: Adopt Vuetify 4 in apps/web
+
+> Build order: right after Story 1.1 and before Story 1.2, so every later UI story builds with Vuetify. Tracked as #24.
+
+As a developer on Chhaap,
+I want Vuetify 4 installed in `apps/web` and the app shell moved onto it,
+So that every later UI story builds from ready-made, accessible components instead of hand-written ones.
+
+**Acceptance Criteria:**
+
+**Given** the spine's Stack table names `vuetify`, `@mdi/js`, `vite-plugin-vuetify` and `@axe-core/playwright` with their versions
+**When** they are installed
+**Then** they are added to `apps/web` only, pinned exactly, and no other dependency is added (NFR-6)
+
+**Given** `apps/web`
+**When** Vuetify is registered
+**Then** it uses `createVuetify` with tree-shaking through `vite-plugin-vuetify`, and nothing imports the whole component set
+
+**Given** `apps/web/src/styles/tokens.css`
+**When** the Vuetify theme is built
+**Then** brand colours, font, radius and spacing come from the tokens, `defaultTheme` is `light`, and Vuetify's CSS layers are declared so the app's own styles win without `!important`
+
+**Given** any icon in the app
+**When** the built app runs
+**Then** it is an `@mdi/js` SVG bundled with the app, and no icon font, web font or other asset is fetched from a CDN or third party
+
+**Given** the app shell
+**When** this story is done
+**Then** `SignInView`, `HomeView` and the layout use Vuetify components (for example `VApp`, `VAppBar`, `VMain`, `VBtn`, `VCard`), and `AppButton` and `AppLayout` are removed
+
+**Given** `tests/layers.ts`
+**When** the unit tests run
+**Then** they fail if anything outside `apps/web` imports `vuetify` or `@mdi/js`; `functions/src/redirect` (AD-9) and `packages/*` never import them
+
+**Given** the test suites
+**When** they run
+**Then** Vitest component tests mount with Vuetify installed (jsdom), and the Playwright shell tests pass in Chromium, Firefox and WebKit at a desktop viewport (NFR-8)
+
+**Given** the production build
+**When** it is compared with the build before this story
+**Then** the gzipped JS and CSS size of `apps/web/dist` before and after is recorded in the PR, and only the components in use are bundled
+
+**Given** the sign-in screen and the app shell
+**When** an `@axe-core/playwright` check runs
+**Then** it reports no serious or critical violations
+
+**And** `AGENTS.md`'s Styling section matches what was built, and type-check, lint, unit, rules and e2e tests pass on CI
 
 ### Story 1.2: Sign in with Google, limited to the team allowlist
 
