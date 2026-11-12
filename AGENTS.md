@@ -48,7 +48,13 @@ Only add dependencies named in the spine's Stack table. A new one must be named 
 
 Vuetify 4 is the component library (decided in #23; installed by Story 1.5, #24). Build every UI element from Vuetify components before writing a custom one. The brand tokens in `apps/web/src/styles/tokens.css` stay the single source of colour, font, radius and spacing, and feed the Vuetify theme. Icons come from `@mdi/js` as SVGs; never add an icon font or load assets from a CDN. Keep custom styles in scoped SFC styles on top of the tokens; the app's styles win through CSS layers, never `!important`. Why: the owner wants every UI element ready-made, and Vuetify covers everything Epics 1–4 need. The decision and its justification are in the spine's Stack table and Deferred section.
 
-Until Story 1.5 merges, the shell still uses the plain-CSS components (`AppButton`, `AppLayout`). Story 1.5 removes them and updates this section to match what was built.
+How it is wired (Story 1.5):
+
+- `apps/web/src/plugins/vuetify.ts` creates Vuetify with `defaultTheme: 'light'` and the `mdi-svg` icon set (use `@mdi/js` paths, e.g. `<v-icon :icon="mdiPlus" />`). The `light` theme's colours are parsed from `tokens.css` at build time (`--color-accent` → `primary`, `--color-bg` → `background`, `--color-surface` → `surface`, `--color-text` → `on-surface`/`on-background`); `src/__tests__/theme.spec.ts` checks the mapping. Add a token to `tokens.css` first, then map it there.
+- `vite-plugin-vuetify` (`autoImport: true`) imports only the components the templates use. Never import `vuetify/components` or `vuetify/directives` wholesale.
+- `main.ts` imports `vuetify/styles` before `tokens.css` and `base.css`. `base.css` declares the layer order `vuetify-core, vuetify-components, vuetify-overrides, vuetify-utilities, vuetify-final, app` and puts the global rules (Vuetify's font variables set to `--font-sans`, the `--radius` on cards and buttons, focus ring) in the last `app` layer. Scoped SFC styles are unlayered, so they beat every layer.
+- `App.vue` wraps the router in `v-app`. Screens use `v-main`; signed-in screens add a `v-app-bar` (see `HomeView.vue`). The sign-in screen is a `v-card` with a `v-btn`.
+- No web font is loaded: the font is the system stack from `tokens.css`. `e2e/shell.spec.ts` fails if the app requests anything from another origin, and `e2e/a11y.spec.ts` runs axe on `/sign-in` and `/` (serious and critical violations fail); add each new screen there.
 
 ## Planning artifacts
 

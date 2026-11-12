@@ -1,34 +1,34 @@
-/* Global base styles. Component styles stay scoped in their SFCs. */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+/*
+ * Global base styles. Vuetify's layers come first; the `app` layer is declared
+ * last, so these rules beat Vuetify's without `!important`. Unlayered styles
+ * (scoped SFC styles) beat every layer.
+ */
+@layer vuetify-core, vuetify-components, vuetify-overrides, vuetify-utilities, vuetify-final, app;
 
-html,
-body {
-  margin: 0;
-  padding: 0;
-}
+@layer app {
+  /* Brand font from tokens.css, fed into Vuetify's font variables. No web font is loaded. */
+  :root {
+    --v-font-body: var(--font-sans);
+    --v-font-heading: var(--font-sans);
+  }
 
-body {
-  min-height: 100vh;
-  font-family: var(--font-sans);
-  font-size: var(--font-size-md);
-  line-height: var(--line-height);
-  color: var(--color-text);
-  background: var(--color-bg);
-  -webkit-font-smoothing: antialiased;
-}
+  body {
+    min-height: 100vh;
+    font-family: var(--font-sans);
+    font-size: var(--font-size-md);
+    line-height: var(--line-height);
+    color: var(--color-text);
+    background: var(--color-bg);
+  }
 
-h1,
-h2,
-h3 {
-  margin: 0;
-  line-height: 1.2;
-}
+  /* Brand radius from tokens.css on Vuetify's surfaces (icon buttons stay round). */
+  .v-card,
+  .v-btn:not(.v-btn--icon) {
+    border-radius: var(--radius);
+  }
 
-:focus-visible {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 2px;
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
 }

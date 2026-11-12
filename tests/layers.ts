@@ -7,8 +7,8 @@ import { posix } from 'node:path'
  * - `packages/render` and `functions` import only `@chhaap/shared`.
  * - `apps/web` imports only `@chhaap/shared` and `@chhaap/render`.
  * So nothing but `apps/web` may import `@chhaap/render`.
- * Third-party packages are not checked here. Relative paths that leave a
- * workspace count as imports of whatever they reach.
+ * Third-party packages are not checked, except the restricted ones below.
+ * Relative paths that leave a workspace count as imports of whatever they reach.
  */
 export const WORKSPACES = {
   'apps/web': { name: '@chhaap/web', mayImport: ['@chhaap/shared', '@chhaap/render'] },
@@ -18,6 +18,16 @@ export const WORKSPACES = {
 } as const satisfies Record<string, { name: string; mayImport: readonly string[] }>
 
 type WorkspaceDir = keyof typeof WORKSPACES
+
+/** Third-party packages (and their subpaths) only the listed workspaces may import. */
+export const RESTRICTED_PACKAGES: Record<string, readonly WorkspaceDir[]> = {
+  vuetify: ['apps/web'],
+  '@mdi/js': ['apps/web'],
+}
+
+function restrictedPackage(spec: string): string | undefined {
+  return Object.keys(RESTRICTED_PACKAGES).find((pkg) => spec === pkg || spec.startsWith(`${pkg}/`))
+}
 
 const SOURCE_FILE = /\.(?:[cm]?[jt]sx?|vue)$/
 // Build output is skipped only at a workspace's top level (e.g. `functions/lib`,
@@ -59,6 +69,10 @@ export function checkFile(file: string, source: string): string[] {
       if (reached === self) continue
       target = reached ? WORKSPACES[reached].name : `outside any workspace (${resolved})`
     } else {
+      const pkg = restrictedPackage(spec)
+      if (pkg && !RESTRICTED_PACKAGES[pkg]!.includes(self)) {
+        violations.push(`${file}: only ${RESTRICTED_PACKAGES[pkg]!.join(', ')} may import ${pkg} (via '${spec}')`)
+      }
       continue
     }
     if (target === name || allowed.has(target)) continue
