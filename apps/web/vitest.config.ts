@@ -10,6 +10,10 @@ export default mergeConfig(
       environment: 'jsdom',
       exclude: [...configDefaults.exclude, 'e2e/**'],
       root: fileURLToPath(new URL('./', import.meta.url)),
+      // Vuetify's components import their own CSS, so Vite must transform them.
+      server: { deps: { inline: ['vuetify'] } },
+      // tokens.css is read as raw text to build the Vuetify theme.
+      css: { include: [/tokens\.css/] },
     },
   }),
 )

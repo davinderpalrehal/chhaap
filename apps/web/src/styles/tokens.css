@@ -9,7 +9,6 @@
   --color-text-muted: #5f5f5a;
   --color-border: #deded9;
   --color-accent: #1f4fd1;
-  --color-accent-hover: #183fa8;
   --color-accent-text: #ffffff;
   --color-focus: #1f4fd1;
 
@@ -31,5 +30,4 @@
   --shadow: 0 1px 2px rgb(0 0 0 / 6%), 0 2px 8px rgb(0 0 0 / 6%);
 
   --layout-max-width: 72rem;
-  --header-height: 3.5rem;
 }

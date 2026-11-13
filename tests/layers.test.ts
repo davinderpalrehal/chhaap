@@ -27,11 +27,16 @@ describe('layer import rules', () => {
       write('functions/src/redirect/index.ts', 'const m = await import(`@chhaap/render`)')
       write('functions/lib/index.js', "import '@chhaap/render'")
       write('apps/web/dist/assets/index.js', "import '@chhaap/functions'")
+      write('apps/web/src/plugins/vuetify.ts', "import { createVuetify } from 'vuetify'")
+      write('packages/shared/src/ui.ts', "import { VBtn } from 'vuetify/components'")
+      write('functions/src/icons.ts', "import { mdiAccount } from '@mdi/js'")
 
       const violations = findViolations(tree)
-      expect(violations).toHaveLength(2)
+      expect(violations).toHaveLength(4)
       expect(violations.join('\n')).toContain('packages/render/src/lib/draw.ts')
       expect(violations.join('\n')).toContain('functions/src/redirect/index.ts')
+      expect(violations.join('\n')).toContain('packages/shared/src/ui.ts')
+      expect(violations.join('\n')).toContain('functions/src/icons.ts')
     } finally {
       rmSync(tree, { recursive: true, force: true })
     }
@@ -66,6 +71,13 @@ describe('checkFile', () => {
     ['packages/shared/src/index.ts', "const m = await import('@chhaap/functions')"],
     ['packages/shared/src/index.ts', "import x from '../../../tests/layers.ts'"],
     ['apps/web/src/main.ts', "import x from '@chhaap/functions'"],
+    ['functions/src/index.ts', "import { createVuetify } from 'vuetify'"],
+    ['functions/src/index.ts', "import { mdiAccount } from '@mdi/js'"],
+    ['packages/shared/src/index.ts', "import 'vuetify/styles'"],
+    ['packages/shared/src/index.ts', "const v = await import('vuetify/components')"],
+    ['packages/render/src/index.ts', "import { VBtn } from 'vuetify/components'"],
+    ['packages/render/src/index.ts', "import type { ThemeDefinition } from 'vuetify'"],
+    ['packages/render/src/index.ts', "import { mdiPlus } from '@mdi/js'"],
   ]
 
   it.each(forbidden)('rejects %s: %s', (file, source) => {
@@ -82,6 +94,12 @@ describe('checkFile', () => {
     ['apps/web/src/main.ts', "import { draw } from '@chhaap/render'"],
     ['apps/web/src/main.ts', "import { EmailSchema } from '@chhaap/shared'"],
     ['apps/web/src/main.ts', "import App from '@/App.vue'"],
+    ['apps/web/src/main.ts', "import 'vuetify/styles'"],
+    ['apps/web/src/plugins/vuetify.ts', "import { createVuetify } from 'vuetify'"],
+    ['apps/web/src/plugins/vuetify.ts', "import { aliases, mdi } from 'vuetify/iconsets/mdi-svg'"],
+    ['apps/web/src/views/HomeView.vue', "import { mdiLogout } from '@mdi/js'"],
+    ['packages/shared/src/index.ts', "import x from 'vuetify-like-package'"],
+    ['packages/shared/src/index.ts', "import x from '@mdi/jsx'"],
   ]
 
   it.each(allowed)('accepts %s: %s', (file, source) => {

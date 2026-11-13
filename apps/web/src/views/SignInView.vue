@@ -1,16 +1,18 @@
-<script setup lang="ts">
-import AppButton from '@/components/AppButton.vue'
-</script>
-
 <template>
-  <main class="sign-in">
-    <section class="sign-in__card" aria-labelledby="sign-in-title">
-      <h1 id="sign-in-title">Chhaap</h1>
-      <p class="sign-in__lead">Sign in with your team Google account.</p>
-      <!-- Google sign-in is wired up in Story 1.2. -->
-      <AppButton disabled>Sign in with Google</AppButton>
-    </section>
-  </main>
+  <v-main>
+    <v-container class="sign-in" fluid>
+      <v-card tag="section" class="sign-in__card" variant="flat" border aria-labelledby="sign-in-title">
+        <v-card-item>
+          <h1 id="sign-in-title" class="sign-in__title">Chhaap</h1>
+        </v-card-item>
+        <v-card-text class="sign-in__lead">Sign in with your team Google account.</v-card-text>
+        <v-card-actions class="justify-center">
+          <!-- Google sign-in is wired up in Story 1.2. -->
+          <v-btn color="primary" variant="flat" disabled>Sign in with Google</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-container>
+  </v-main>
 </template>
 
 <style scoped>
@@ -22,26 +24,23 @@ import AppButton from '@/components/AppButton.vue'
 }
 
 .sign-in__card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-4);
   width: 100%;
   max-width: 24rem;
-  padding: var(--space-8);
+  padding: var(--space-6);
   text-align: center;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
+  border-color: var(--color-border);
   box-shadow: var(--shadow);
 }
 
-.sign-in__card h1 {
+.sign-in__title {
+  margin: 0;
+  color: var(--color-text);
   font-size: var(--font-size-xl);
+  line-height: 1.2;
 }
 
 .sign-in__lead {
-  margin: 0;
   color: var(--color-text-muted);
+  font-size: var(--font-size-md);
 }
 </style>
