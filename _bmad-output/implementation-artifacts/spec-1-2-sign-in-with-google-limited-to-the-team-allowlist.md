@@ -2,7 +2,7 @@
 title: 'Story 1.2: Sign in with Google, limited to the team allowlist'
 type: 'feature'
 created: '2026-11-18'
-status: 'in-progress'
+status: 'done'
 baseline_commit: 'f94edaf860947c165d6839358330f4f2c2c7b753'
 route: 'dispatch'
 review_loop_iteration: 0
@@ -61,17 +61,17 @@ context:
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `apps/web/package.json` -- add `firebase` 13.2.0 -- the web app needs the Auth and Firestore SDKs.
-- [ ] `apps/web/src/firebase.ts` -- `initializeApp` with the demo config; export `auth` and `db`; connect the emulators for `demo-*` projects.
-- [ ] `apps/web/src/stores/session.ts` -- Pinia store: `status` (`loading`, `signed-out`, `not-authorised`, `member`, `owner`), `email`, `ready` promise, `signIn()` (GoogleAuthProvider popup), `signOut()`. It decides status from `emailVerified` plus a `getDoc` of the user's own `allowlist/{lowercased email}`; a read error means not authorised.
-- [ ] `apps/web/src/router/index.ts`, `views/NotAuthorisedView.vue`, `SignInView.vue`, `HomeView.vue` -- guards, the new view, the enabled button with an error line, email and Sign out.
-- [ ] `apps/web/src/__tests__/*` -- guard and view tests for every web row of the matrix, with the store's Firebase calls mocked.
-- [ ] `firestore.rules` -- `isTeam()`; `allowlist/{email}` readable by self or owner; every other collection readable by `isTeam()`; writes `if false`.
-- [ ] `tests/rules/firestore.test.ts` -- unauthenticated, unverified, outsider (case variants), member and owner × own allowlist doc, other allowlist doc, `codes/abc23`, and writes.
-- [ ] `functions/src/auth.ts` + `auth.emulator.test.ts` -- `assertTeamMember(auth, db?)` returns `{email, role}`; `assertOwner` adds a role check. Both throw `HttpsError('permission-denied')`. Tests cover missing auth, unverified, not listed, member-as-owner, mixed-case email, and removal taking effect on the next call.
-- [ ] `functions/src/bootstrap-owner.ts` + `functions/scripts/bootstrap-owner.ts` + emulator test -- a transaction that queries `role == 'owner'` and refuses if one exists, else writes the doc. The CLI requires `--email` and either `FIRESTORE_EMULATOR_HOST` or an explicit `--project`. Add the root script `owner:bootstrap`.
-- [ ] `apps/web/e2e/*`, root `test:e2e` script, `.github/workflows/ci.yml` -- wrap Playwright in `firebase emulators:exec --only auth,firestore`; seed allowlist docs through the emulator REST API or the Admin SDK in a global setup; add signed-in specs (member reaches home, outsider sees not-authorised, sign out returns to sign-in); allow the emulator origins in the cross-origin guard; assert the focused sign-in button shows a visible outline (closes the deferred-work entry).
-- [ ] `AGENTS.md` -- how to sign in locally (emulator UI, seeding the owner with `owner:bootstrap`).
+- [x] `apps/web/package.json` -- add `firebase` 13.2.0 -- the web app needs the Auth and Firestore SDKs.
+- [x] `apps/web/src/firebase.ts` -- `initializeApp` with the demo config; export `auth` and `db`; connect the emulators for `demo-*` projects.
+- [x] `apps/web/src/stores/session.ts` -- Pinia store: `status` (`loading`, `signed-out`, `not-authorised`, `member`, `owner`), `email`, `ready` promise, `signIn()` (GoogleAuthProvider popup), `signOut()`. It decides status from `emailVerified` plus a `getDoc` of the user's own `allowlist/{lowercased email}`; a read error means not authorised.
+- [x] `apps/web/src/router/index.ts`, `views/NotAuthorisedView.vue`, `SignInView.vue`, `HomeView.vue` -- guards, the new view, the enabled button with an error line, email and Sign out.
+- [x] `apps/web/src/__tests__/*` -- guard and view tests for every web row of the matrix, with the store's Firebase calls mocked.
+- [x] `firestore.rules` -- `isTeam()`; `allowlist/{email}` readable by self or owner; every other collection readable by `isTeam()`; writes `if false`.
+- [x] `tests/rules/firestore.test.ts` -- unauthenticated, unverified, outsider (case variants), member and owner × own allowlist doc, other allowlist doc, `codes/abc23`, and writes.
+- [x] `functions/src/auth.ts` + `auth.emulator.test.ts` -- `assertTeamMember(auth, db?)` returns `{email, role}`; `assertOwner` adds a role check. Both throw `HttpsError('permission-denied')`. Tests cover missing auth, unverified, not listed, member-as-owner, mixed-case email, and removal taking effect on the next call.
+- [x] `functions/src/bootstrap-owner.ts` + `functions/scripts/bootstrap-owner.ts` + emulator test -- a transaction that queries `role == 'owner'` and refuses if one exists, else writes the doc. The CLI requires `--email` and either `FIRESTORE_EMULATOR_HOST` or an explicit `--project`. Add the root script `owner:bootstrap`.
+- [x] `apps/web/e2e/*`, root `test:e2e` script, `.github/workflows/ci.yml` -- wrap Playwright in `firebase emulators:exec --only auth,firestore`; seed allowlist docs through the emulator REST API or the Admin SDK in a global setup; add signed-in specs (member reaches home, outsider sees not-authorised, sign out returns to sign-in); allow the emulator origins in the cross-origin guard; assert the focused sign-in button shows a visible outline (closes the deferred-work entry).
+- [x] `AGENTS.md` -- how to sign in locally (emulator UI, seeding the owner with `owner:bootstrap`).
 
 **Acceptance Criteria:**
 - Given the Firestore emulator, when `owner:bootstrap` runs twice, then the first run writes the owner and the second refuses and changes nothing.
@@ -98,6 +98,28 @@ Handoff:
 ## Spec Change Log
 
 ## Review Triage Log
+
+| # | Source | Finding | Verdict | Evidence | Route |
+|---|---|---|---|---|---|
+| 1 | verif | `settle()` latest-wins guard has no overlapping-settle test | medium | mock `getDoc` resolves at once and no test runs two settles; removing the guard passes every test | patch |
+| 2 | verif, edge, blind | `session.error` survives a session change, so a stale alert can reappear after sign-out | low | error is only cleared at the start of `signIn()`; another-tab sign-in then sign-out shows it again; one-line clear in `settle()` | patch |
+| 3 | blind | Test "member removed in another tab…" and router comment imply live removal | low | `onAuthStateChanged` never fires on an allowlist delete; test fires a synthetic event; rename only | patch |
+| 4 | blind | Bootstrap CLI honours a stray `GCLOUD_PROJECT` in emulator mode | low | `values.project ?? GCLOUD_PROJECT ?? 'demo-chhaap'` writes to another namespace the app never reads; direct correction | patch |
+| 5 | blind | Rules matrix misses owner with mixed-case token and allowlist subcollection reads | low | no subject covers `isOwner()` via lowered key; no subcollection path tested | patch |
+| 6 | blind | `test:e2e` fails while `npm run dev` holds emulator ports 9099/8080 | low | both start emulators on the same ports; fix is an AGENTS.md note | defer |
+| 7 | blind | `sprint-status.yaml` edited despite the spec's "Never" | false | the "Never" binds the implementer; the build workflow's sprint sync owns that file, and status moves to review at handoff | reject |
+| 8 | blind | `@chhaap/shared` imported but undeclared in `apps/web`/`functions` | low | npm workspaces (the repo's package manager) hoist it and all builds pass; same call as Story 1.1 row 10; functions deploy is the 1.4 deferred entry | reject |
+| 9 | blind, edge | Not-authorised text wrong for unverified email, read error or null email | low | Google accounts always carry a verified email; read error is the spec's chosen fallback; fix adds a reason state and branches | reject |
+| 10 | blind | Failed allowlist read locks a member out without retry or log | low | Firestore `getDoc` rejects only offline or on outage; reload recovers; fix adds UI and retry | reject |
+| 11 | blind | No loading screen and no timeout on `session.ready` | low | `onAuthStateChanged` always fires once; offline `getDoc` rejects rather than hanging; fix adds state and UI | reject |
+| 12 | edge, blind | Malformed `role` treated as member in store, `auth.ts`, rules | false | AD-8 defines team as "allowlist doc exists"; only bootstrap and Story 1.3's zod-validated commands write the collection | reject |
+| 13 | edge, blind | `signOut()` rejection unhandled; no busy state | low | `firebaseSignOut` clears local state and practically never rejects; fix adds branches | reject |
+| 14 | edge | Keyboard Enter on the busy sign-in button opens a second popup | low | `v-btn` loading sets `tabindex=-1` and pointer-events none; needs a focused key press mid-popup; fix adds a guard | reject |
+| 15 | edge, verif | `defaultDb()` throws if only named Admin apps exist | low | nothing in the functions runtime creates named apps; tests pass `db` explicitly; no consumer until Story 1.3 | reject |
+| 16 | edge | e2e retry can leave earlier popups open | low | 234 repeated runs passed; test-only, fix adds cleanup code | reject |
+| 17 | blind | Sign-in error lacks error styling and distinct popup-blocked advice | low | `tokens.css` has no error colour; adding one is a design decision; text is announced via `role="alert"` | reject |
+| 18 | blind | e2e gaps: owner seed unused, no unverified e2e, cross-origin guard only signed-out, no a11y on error state | low | each case is covered by unit or rules tests; the owner seed keeps emulator data realistic | reject |
+| 19 | blind | Emulator switch in `firebase.ts` tests a constant | false | the spec requires connecting for any `demo-*` id; the production switch is Story 1.4's | reject |
 
 ## Design Notes
 
