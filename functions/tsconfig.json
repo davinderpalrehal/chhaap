@@ -1,11 +1,15 @@
-// Type-checks sources and tests. The emitted build uses tsconfig.build.json.
+// Type-checks sources, tests and scripts. The emitted build uses tsconfig.build.json.
 {
   "extends": "@tsconfig/node24/tsconfig.json",
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "scripts/**/*.ts"],
   "compilerOptions": {
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "verbatimModuleSyntax": true,
+    // scripts/ run with Node's type stripping, so they import `.ts` files and
+    // may use only erasable syntax.
+    "rewriteRelativeImportExtensions": true,
+    "erasableSyntaxOnly": true,
     "types": ["node"],
     "noEmit": true
   }
