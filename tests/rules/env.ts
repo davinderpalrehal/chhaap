@@ -16,3 +16,4 @@ export function createTestEnv(): Promise<RulesTestEnvironment> {
 }
 
 export const verifiedUser = { email: 'member@example.com', email_verified: true }
+export const verifiedOwner = { email: 'owner@example.com', email_verified: true }
