@@ -41,6 +41,7 @@ export const useSessionStore = defineStore('session', () => {
     const next = await statusOf(user)
     if (call !== latest) return
     status.value = next
+    error.value = null
     email.value = user?.email ?? null
     markReady()
   }

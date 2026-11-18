@@ -32,8 +32,8 @@ export function createAppRouter(history: RouterHistory = createWebHistory(import
     return to.name === 'sign-in' || to.name === 'not-authorised' ? { name: 'home' } : true
   })
 
-  // Re-run the guard when the session changes after the first navigation
-  // (sign-in, sign-out, or another tab signing out).
+  // Re-run the guard when the session status changes after the first navigation:
+  // sign-in, sign-out, or any later Firebase auth event (e.g. a token refresh).
   let watching = false
   router.afterEach(() => {
     if (watching) return

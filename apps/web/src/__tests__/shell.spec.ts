@@ -146,12 +146,43 @@ describe('not authorised', () => {
 })
 
 describe('session changes after the first navigation', () => {
-  it('a member removed in another tab is moved to /not-authorised on the next auth event', async () => {
+  it('re-evaluates a removed member on the next auth event (e.g. token refresh or reload)', async () => {
     const { router } = await mountAt('/', member)
     delete fake.allowlist['member@example.com']
     fake.listener!(member)
     await flushPromises()
     expect(router.currentRoute.value.name).toBe('not-authorised')
+  })
+
+  it('a slower, older settle cannot overwrite a newer one', async () => {
+    const { router, session } = await mountAt('/sign-in', null)
+    const release = fake.holdReads()
+    fake.listener!(member) // member settle starts and waits on the allowlist read
+    await flushPromises()
+    await session.signOut() // newer settle: signed out
+    release()
+    await flushPromises()
+    expect(session.status).toBe('signed-out')
+    expect(router.currentRoute.value.name).toBe('sign-in')
+  })
+
+  it('a failed popup error is cleared by later session changes', async () => {
+    const { wrapper, router, session } = await mountAt('/sign-in', null)
+    fake.popup.mockRejectedValueOnce(new Error('auth/popup-closed-by-user'))
+    await wrapper.get('button.v-btn').trigger('click')
+    await flushPromises()
+    expect(session.error).not.toBeNull()
+
+    // A successful sign-in in another tab arrives as an auth event, not via signIn().
+    fake.listener!(member)
+    await flushPromises()
+    expect(router.currentRoute.value.name).toBe('home')
+
+    await wrapper.get('header.v-app-bar button').trigger('click')
+    await flushPromises()
+    expect(router.currentRoute.value.name).toBe('sign-in')
+    expect(session.error).toBeNull()
+    expect(wrapper.find('[role="alert"]').exists()).toBe(false)
   })
 
   it('the guard waits for the first auth state', async () => {

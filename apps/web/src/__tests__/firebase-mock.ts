@@ -18,6 +18,17 @@ export const fake = {
   popup: vi.fn<() => Promise<{ user: FakeUser }>>(),
   signOut: vi.fn<() => Promise<void>>(async () => {}),
   reads: [] as string[],
+  /** While set, allowlist reads wait for it to resolve. */
+  gate: null as Promise<void> | null,
+  /** Holds every allowlist read until the returned function is called. */
+  holdReads(): () => void {
+    let release!: () => void
+    this.gate = new Promise<void>((resolve) => (release = resolve))
+    return () => {
+      this.gate = null
+      release()
+    }
+  },
   reset() {
     this.listener = null
     this.allowlist = {}
@@ -25,6 +36,7 @@ export const fake = {
     this.popup.mockReset()
     this.signOut.mockClear()
     this.reads = []
+    this.gate = null
   },
 }
 
@@ -44,6 +56,7 @@ export const firestoreModule = () => ({
   doc: (_db: unknown, coll: string, id: string) => ({ coll, id }),
   getDoc: async ({ coll, id }: { coll: string; id: string }) => {
     fake.reads.push(`${coll}/${id}`)
+    if (fake.gate) await fake.gate
     if (fake.readError) throw new Error('permission-denied')
     const data = coll === 'allowlist' ? fake.allowlist[id] : undefined
     return { exists: () => data !== undefined, get: (key: 'role') => data?.[key] }

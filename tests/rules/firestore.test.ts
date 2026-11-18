@@ -30,6 +30,7 @@ beforeEach(async () => {
     await setDoc(doc(ctx.firestore(), 'clients/c1/notes/n1'), { text: 'seed' })
     await setDoc(doc(ctx.firestore(), 'allowlist/member@example.com'), { role: 'member' })
     await setDoc(doc(ctx.firestore(), 'allowlist/owner@example.com'), { role: 'owner' })
+    await setDoc(doc(ctx.firestore(), 'allowlist/member@example.com/notes/n1'), { text: 'seed' })
   })
 })
 
@@ -147,6 +148,16 @@ const subjects: Subject[] = [
     team: true,
     listAllowlist: true,
   },
+  {
+    label: 'owner, mixed-case token',
+    db: user({ ...verifiedOwner, email: 'Owner@Example.COM' }),
+    own: 'allowlist/owner@example.com',
+    other: 'allowlist/member@example.com',
+    ownReadable: true,
+    otherReadable: true,
+    team: true,
+    listAllowlist: true,
+  },
 ]
 
 const expectRead = (allowed: boolean, read: Promise<unknown>) =>
@@ -172,6 +183,11 @@ describe.each(subjects)('Firestore, $label', (s) => {
   it(`${s.team ? 'can' : 'cannot'} list codes and read nested docs`, async () => {
     await expectRead(s.team, getDocs(collection(s.db(), 'codes')))
     await expectRead(s.team, getDoc(doc(s.db(), 'clients/c1/notes/n1')))
+  })
+
+  it('cannot read a subcollection under an allowlist doc', async () => {
+    await assertFails(getDoc(doc(s.db(), 'allowlist/member@example.com/notes/n1')))
+    await assertFails(getDocs(collection(s.db(), 'allowlist/member@example.com/notes')))
   })
 
   it.each([

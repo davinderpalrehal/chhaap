@@ -29,7 +29,7 @@ const emulator = process.env.FIRESTORE_EMULATOR_HOST
 if (!emulator && !values.project) {
   fail(`Set FIRESTORE_EMULATOR_HOST to use the emulator, or pass --project explicitly.\n${USAGE}`, 2)
 }
-const projectId = values.project ?? process.env.GCLOUD_PROJECT ?? 'demo-chhaap'
+const projectId = values.project ?? 'demo-chhaap'
 
 const app = initializeApp({ projectId })
 try {
