@@ -10,10 +10,15 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import vuetify from './plugins/vuetify'
+import { useSessionStore } from './stores/session'
 
 const app = createApp(App)
+const pinia = createPinia()
 
-app.use(createPinia())
+app.use(pinia)
+// Initialises Firebase (via the store's import) and subscribes to auth state
+// before the router's first navigation, which waits for `session.ready`.
+useSessionStore(pinia).init()
 app.use(router)
 app.use(vuetify)
 

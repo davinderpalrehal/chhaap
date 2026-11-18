@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@mdi/js": "7.4.47",
+    "firebase": "13.2.0",
     "pinia": "4.1.0",
     "vue": "3.5.45",
     "vue-router": "5.5.0",

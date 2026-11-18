@@ -19,6 +19,8 @@ export default defineConfig({
           name: 'functions',
           root: 'functions',
           include: ['src/**/*.test.ts'],
+          // Emulator tests run under `npm run test:rules` (vitest.rules.config.ts).
+          exclude: ['src/**/*.emulator.test.ts'],
           environment: 'node',
         },
       },
