@@ -57,7 +57,9 @@ jobs:
         run: npx playwright install --with-deps chromium firefox webkit
         working-directory: apps/web
 
-      - name: E2E tests
+      # Runs Playwright under the Auth and Firestore emulators (firebase emulators:exec),
+      # signing in through the Auth emulator's Google popup.
+      - name: E2E tests (emulators)
         run: npm run test:e2e
 
       - name: Upload Playwright report
