@@ -1,3 +1,22 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+
+import { useSessionStore } from '@/stores/session'
+
+const session = useSessionStore()
+const busy = ref(false)
+
+// The router guard moves a member on once the session status changes.
+async function signIn() {
+  busy.value = true
+  try {
+    await session.signIn()
+  } finally {
+    busy.value = false
+  }
+}
+</script>
+
 <template>
   <v-main>
     <v-container class="sign-in" fluid>
@@ -7,9 +26,9 @@
         </v-card-item>
         <v-card-text class="sign-in__lead">Sign in with your team Google account.</v-card-text>
         <v-card-actions class="justify-center">
-          <!-- Google sign-in is wired up in Story 1.2. -->
-          <v-btn color="primary" variant="flat" disabled>Sign in with Google</v-btn>
+          <v-btn color="primary" variant="flat" :loading="busy" @click="signIn">Sign in with Google</v-btn>
         </v-card-actions>
+        <p v-if="session.error" class="sign-in__error" role="alert">{{ session.error }}</p>
       </v-card>
     </v-container>
   </v-main>
@@ -42,5 +61,11 @@
 .sign-in__lead {
   color: var(--color-text-muted);
   font-size: var(--font-size-md);
+}
+
+.sign-in__error {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
 }
 </style>
