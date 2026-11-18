@@ -26,10 +26,24 @@ Prerequisites: Node 24.12 or later (`.nvmrc`), and Java 21 or later for the Fire
 | Lint (oxlint + ESLint) | `npm run lint` (auto-fix: `npm run lint:fix`) |
 | Unit tests (incl. the layer-import test) | `npm run test:unit` |
 | Rules tests (start their own Firestore + Storage emulators) | `npm run test:rules` |
-| Browser tests (desktop Chromium, Firefox, WebKit) | `npm run test:e2e` |
+| Rules + emulator tests also cover `functions/src/**/*.emulator.test.ts` (`auth.ts`, owner bootstrap) | `npm run test:rules` |
+| Browser tests (desktop Chromium, Firefox, WebKit; start their own Auth + Firestore emulators) | `npm run test:e2e` |
+| Seed the one owner (refuses if an owner exists) | `npm run owner:bootstrap -- --email you@example.com` |
 | All tests | `npm test` |
 
 `npm run dev` serves the app with Vite on http://localhost:5173. The emulators run under the `demo-chhaap` project id, so they can never reach production: UI on 4000, Auth 9099, Firestore 8080, Storage 9199, Functions 5001, and Hosting with the `app` site on 5050 and the `link` site on the next free port. The `app` Hosting site serves `apps/web/dist`, so it shows a 404 until `npm run build`; use Vite day to day. On CI, e2e runs against the built app, so run `npm run build` before `CI=1 npm run test:e2e`.
+
+### Signing in locally
+
+The web app's Firebase config is the `demo-chhaap` demo config in `apps/web/src/firebase.ts`; for any `demo-*` project it talks only to the Auth (9099) and Firestore (8080) emulators. With `npm run dev` running:
+
+1. Seed the owner: `FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 npm run owner:bootstrap -- --email you@example.com`. Without `FIRESTORE_EMULATOR_HOST` the script needs an explicit `--project`, so it never reaches a real project by accident.
+2. Open http://localhost:5173, click **Sign in with Google**, and in the emulator's popup choose **Add new account** with the same email. Any other email lands on "Not authorised".
+3. Add or remove members by hand in the emulator UI (http://localhost:4000/firestore): a doc `allowlist/{lowercased email}` with `role: "member"`. The Team screen arrives in Story 1.3.
+
+Emulator data is not persisted between runs, so seed the owner again after a restart. `npm run test:e2e` clears the emulators and seeds its own allowlist and accounts (`apps/web/e2e/global-setup.ts`); signed-in specs use `signInWithGoogle()` from `apps/web/e2e/emulators.ts`.
+
+Access rules (AD-8): `firestore.rules` grants reads to `isTeam()` (verified email + own allowlist doc), lets a user read only their own `allowlist/{email}` doc (the owner reads all), and denies every client write. Callable commands call `assertTeamMember()` / `assertOwner()` from `functions/src/auth.ts`, which read the allowlist on every call.
 
 CI (`.github/workflows/ci.yml`) runs type-check, lint, unit, rules and e2e tests on every pull request, against the emulators, with no secrets.
 
@@ -54,7 +68,7 @@ How it is wired (Story 1.5):
 - `vite-plugin-vuetify` (`autoImport: true`) imports only the components the templates use. Never import `vuetify/components` or `vuetify/directives` wholesale.
 - `main.ts` imports `vuetify/styles` before `tokens.css` and `base.css`. `base.css` declares the layer order `vuetify-core, vuetify-components, vuetify-overrides, vuetify-utilities, vuetify-final, app` and puts the global rules (Vuetify's font variables set to `--font-sans`, the `--radius` on cards and buttons, focus ring) in the last `app` layer. Scoped SFC styles are unlayered, so they beat every layer.
 - `App.vue` wraps the router in `v-app`. Screens use `v-main`; signed-in screens add a `v-app-bar` (see `HomeView.vue`). The sign-in screen is a `v-card` with a `v-btn`.
-- No web font is loaded: the font is the system stack from `tokens.css`. `e2e/shell.spec.ts` fails if the app requests anything from another origin, and `e2e/a11y.spec.ts` runs axe on `/sign-in` and `/` (serious and critical violations fail); add each new screen there.
+- No web font is loaded: the font is the system stack from `tokens.css`. `e2e/shell.spec.ts` fails if the app requests anything from another origin except the emulators and `apis.google.com` (Firebase Auth's popup helper), and `e2e/a11y.spec.ts` runs axe on `/sign-in`, `/` and `/not-authorised` (serious and critical violations fail); add each new screen there.
 
 ## Planning artifacts
 
